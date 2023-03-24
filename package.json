@@ -1,0 +1,15 @@
+{
+  "name": "minecraftmodmanager",
+  "version": "1.0.0",
+  "description": "Minecraft automatic mod downloader and updater",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "minecraftmodmanager"
+  },
+  "author": "Luca Vaccari",
+  "license": "ISC"
+}
