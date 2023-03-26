@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "minecraftmodmanager"
+    "url": "https://github.com/LucaVaccari/MinecraftModManager"
   },
   "author": "Luca Vaccari",
   "license": "ISC"
