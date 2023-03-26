@@ -4,6 +4,7 @@ import fetch from 'node-fetch';
 dotenv.config();
 
 const BASE_URL = "https://api.curseforge.com";
+
 const MINECRAFT_ID = 432;
 
 (async () => {
