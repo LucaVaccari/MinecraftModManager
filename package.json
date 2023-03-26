@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Minecraft automatic mod downloader and updater",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,5 +12,9 @@
     "url": "https://github.com/LucaVaccari/MinecraftModManager"
   },
   "author": "Luca Vaccari",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "node-fetch": "^3.3.1"
+  }
 }
