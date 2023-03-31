@@ -87,10 +87,26 @@ async function download(args) {
     }
 }
 
+async function simpleDownload() {
+    const rawFile = fs.readFileSync('C:\\Users\\Luca\\Desktop\\modIds.txt');
+    const ids = rawFile.toString().split('\r\n');
+    ids.forEach(async id => {
+        try {
+            await cf.downloadMod(id, '1.19.3', 'C:\\Users\\Luca\\Desktop\\mods');
+        } catch (e) {
+            const mod = await cf.getMod(id);
+            console.error(id + " - " + mod.data.name + ' not downloaded');
+        }
+    });
+}
+
 (async () => {
     // const mods = await searchMod("thaumcraft", 1);
     // const modId = mods.data[0].id;
     // downloadMod(modId, "1.7.10", DOWNLOAD_PATH);
+
+    simpleDownload();
+    return;
 
     const versionsRaw = await cf.getMinecraftVersions();
     versions = new Set(versionsRaw.data.reduce(
