@@ -1,3 +1,5 @@
+import * as cf from './js/curseforge.js';
+
 const DOWNLOAD_PATH = "C://users/asus/Desktop";
 
 const helpCommands = {
@@ -11,12 +13,16 @@ const helpCommands = {
     }
 };
 
+function printWrongSyntaxMessage(command) {
+    console.log('Wrong syntax. Usage: ' + helpCommands[command].usage);
+}
+
 (async () => {
     // const mods = await searchMod("thaumcraft", 1);
     // const modId = mods.data[0].id;
     // downloadMod(modId, "1.7.10", DOWNLOAD_PATH);
 
-    const versionsRaw = await getMinecraftVersions();
+    const versionsRaw = await cf.getMinecraftVersions();
     const versions = new Set(versionsRaw.data.reduce(
         (accumulator, currentVal) => accumulator.concat(currentVal.versions), []));
 
@@ -26,17 +32,30 @@ const helpCommands = {
         case 'search':
             // <filter> <?number-of-results>
             if (!args[1]) {
-                console.error('Wrong syntax. Usage: ' + helpCommands.search.usage);
+                printWrongSyntaxMessage('search');
                 break;
             }
-            const results = await searchMod(args[1] || "", args[2] || 10);
+            const results = await cf.searchMod(args[1] || "", args[2] || 10);
             results.data.forEach(e => {
                 console.log(`${e.id} - ${e.name} (${e.slug})`);
             });
             break;
         case 'download':
             // <modId> <gameVersion> <path>
-
+            if (!args[1] || !args[2] || !args[3]) {
+                printWrongSyntaxMessage('download');
+                break;
+            }
+            if (!versions.has(args[2])) {
+                console.error("The selected MC version does not exist.");
+                break;
+            }
+            try {
+                cf.downloadMod(args[1], args[2], args[3]);
+                console.log(`Mod ${args[1]} downloaded successfully`);
+            } catch (e) {
+                console.error(e);
+            }
             break;
         case 'help':
             if (!args[1]) {
