@@ -7,6 +7,10 @@ const helpCommands = {
         description: 'Search for a mod id based on a filter.',
         usage: 'search <filter> <?number-of-results>'
     },
+    execute: {
+        description: 'Downloads/updated the modes based on a script',
+        usage: 'execute <path>'
+    },
     download: {
         description: 'Downloads a mod.',
         usage: 'download <modId> <gameVersion> <path>'
@@ -21,6 +25,7 @@ function printWrongSyntaxMessage(command) {
     // const mods = await searchMod("thaumcraft", 1);
     // const modId = mods.data[0].id;
     // downloadMod(modId, "1.7.10", DOWNLOAD_PATH);
+    console.log(typeof [0]);
 
     const versionsRaw = await cf.getMinecraftVersions();
     const versions = new Set(versionsRaw.data.reduce(
@@ -39,6 +44,14 @@ function printWrongSyntaxMessage(command) {
             results.data.forEach(e => {
                 console.log(`${e.id} - ${e.name} (${e.slug})`);
             });
+            break;
+        case 'execute':
+            // <path>
+            if (!args[1]) {
+                printWrongSyntaxMessage('execute');
+                break;
+            }
+            // todo
             break;
         case 'download':
             // <modId> <gameVersion> <path>
