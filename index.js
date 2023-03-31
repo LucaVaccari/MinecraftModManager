@@ -1,6 +1,7 @@
 import * as cf from './js/curseforge.js';
+import * as fs from 'fs';
 
-const DOWNLOAD_PATH = "C://users/asus/Desktop";
+let versions;
 
 const helpCommands = {
     search: {
@@ -21,54 +22,91 @@ function printWrongSyntaxMessage(command) {
     console.log('Wrong syntax. Usage: ' + helpCommands[command].usage);
 }
 
+async function search(args) {
+    // <filter> <?number-of-results>
+    if (!args[1]) {
+        printWrongSyntaxMessage('search');
+        return;
+    }
+
+    const results = await cf.searchMod(args[1] || "", args[2] || 10);
+    results.data.forEach(e => {
+        console.log(`${e.id} - ${e.name} (${e.slug})`);
+    });
+}
+
+async function execute(args) {
+    // <path>
+    if (!args[1]) {
+        printWrongSyntaxMessage('execute');
+        return;
+    }
+
+    // READ JSON FILE
+    try {
+        const rawScript = fs.readFileSync(args[1]);
+        const script = JSON.parse(rawScript);
+
+        // script.modList.forEach(mod => {
+        //     const currentModPath = script.savePath + '/' + mod.fileName;
+        //     const folderName = new Date().toISOString().replaceAll(':', '.');
+        //     const newFolder = script.savePath + '/' + folderName;
+        //     const newModPath = newFolder + '/' + mod.fileName + '.disabled';
+
+        //     if (!fs.existsSync(newFolder) && fs.existsSync(currentModPath)) fs.mkdirSync(newFolder);
+
+        //     fs.rename(currentModPath, newModPath, err => { if (err) console.error(err); });
+        // });
+
+        // todo: DOWNLOAD NEW MODS
+        script.modList.forEach(mod => {
+            const path = script.savePath + '/' + mod.fileName;
+            cf.downloadMod(mod.id, script.gameVersion, path);
+        });
+    } catch (e) {
+        console.error(e);
+    }
+
+}
+
+async function download(args) {
+    // <modId> <gameVersion> <path>
+    if (!args[1] || !args[2] || !args[3]) {
+        printWrongSyntaxMessage('download');
+        return;
+    }
+    if (!versions.has(args[2])) {
+        console.error("The selected MC version does not exist.");
+        return;
+    }
+    try {
+        await cf.downloadMod(args[1], args[2], args[3]);
+        console.log(`Mod ${args[1]} downloaded successfully`);
+    } catch (e) {
+        console.error(e);
+    }
+}
+
 (async () => {
     // const mods = await searchMod("thaumcraft", 1);
     // const modId = mods.data[0].id;
     // downloadMod(modId, "1.7.10", DOWNLOAD_PATH);
-    console.log(typeof [0]);
 
     const versionsRaw = await cf.getMinecraftVersions();
-    const versions = new Set(versionsRaw.data.reduce(
+    versions = new Set(versionsRaw.data.reduce(
         (accumulator, currentVal) => accumulator.concat(currentVal.versions), []));
 
     const args = process.argv.slice(2);
     const command = args[0];
     switch (command) {
         case 'search':
-            // <filter> <?number-of-results>
-            if (!args[1]) {
-                printWrongSyntaxMessage('search');
-                break;
-            }
-            const results = await cf.searchMod(args[1] || "", args[2] || 10);
-            results.data.forEach(e => {
-                console.log(`${e.id} - ${e.name} (${e.slug})`);
-            });
+            await search(args);
             break;
         case 'execute':
-            // <path>
-            if (!args[1]) {
-                printWrongSyntaxMessage('execute');
-                break;
-            }
-            // todo
+            await execute(args);
             break;
         case 'download':
-            // <modId> <gameVersion> <path>
-            if (!args[1] || !args[2] || !args[3]) {
-                printWrongSyntaxMessage('download');
-                break;
-            }
-            if (!versions.has(args[2])) {
-                console.error("The selected MC version does not exist.");
-                break;
-            }
-            try {
-                cf.downloadMod(args[1], args[2], args[3]);
-                console.log(`Mod ${args[1]} downloaded successfully`);
-            } catch (e) {
-                console.error(e);
-            }
+            await download(args);
             break;
         case 'help':
             if (!args[1]) {

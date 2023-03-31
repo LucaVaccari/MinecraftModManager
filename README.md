@@ -18,7 +18,10 @@
 ```js
 {
     'gameVersion': string,
-    'modList': [int]
+    'modList': [{
+        'modId': int,
+        'fileName': string
+    }]
     'modPath': string
 }
 ```
