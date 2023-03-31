@@ -1,50 +1,57 @@
-import * as dotenv from 'dotenv';
-import fetch from 'node-fetch';
-import * as fs from 'fs';
-
-dotenv.config();
-
-const BASE_URL = "https://api.curseforge.com";
-
-const MINECRAFT_ID = 432;
-const headers = {
-    'Accept': 'application/json',
-    'x-api-key': process.env.API_KEY
-};
 const DOWNLOAD_PATH = "C://users/asus/Desktop";
 
-async function httpCall(url) {
-    try {
-        const res = await fetch(url, { headers });
-        if (res.status == 403) {
-            console.error("Error 403: not permitted");
-            return;
-        }
-        const json = await res.json();
-        return json;
-    } catch (e) {
-        console.log(e.message);
+const helpCommands = {
+    search: {
+        description: 'Search for a mod id based on a filter.',
+        usage: 'search <filter> <?number-of-results>'
+    },
+    download: {
+        description: 'Downloads a mod.',
+        usage: 'download <modId> <gameVersion> <path>'
     }
-}
-
-async function searchMod(searchFilter, pageSize) {
-    return await httpCall(`${BASE_URL}/v1/mods/search?gameId=${MINECRAFT_ID}&sortOrder=desc&modLoaderType=1&sortField=2&searchFilter=${searchFilter}&pageSize=${pageSize}`);
-}
-
-async function downloadMod(modId, minecraftVersion, path) {
-    const modFiles = await httpCall(`${BASE_URL}/v1/mods/${modId}/files?gameVersion=${minecraftVersion}&pageSize=1`);
-    const mod = modFiles.data[0];
-
-    const res = await fetch(mod.downloadUrl);
-    if (!res.ok) {
-        throw new Error(`Unexpected response: ${res.statusText}`);
-    }
-    res.body.pipe(fs.createWriteStream(path + "/" + mod.fileName));
-    console.log(`Mod ${modId} downloaded successfully`);
-}
+};
 
 (async () => {
-    const mods = await searchMod("thaumcraft", 1);
-    const modId = mods.data[0].id;
-    downloadMod(modId, "1.7.10", DOWNLOAD_PATH);
+    // const mods = await searchMod("thaumcraft", 1);
+    // const modId = mods.data[0].id;
+    // downloadMod(modId, "1.7.10", DOWNLOAD_PATH);
+
+    const versionsRaw = await getMinecraftVersions();
+    const versions = new Set(versionsRaw.data.reduce(
+        (accumulator, currentVal) => accumulator.concat(currentVal.versions), []));
+
+    const args = process.argv.slice(2);
+    const command = args[0];
+    switch (command) {
+        case 'search':
+            // <filter> <?number-of-results>
+            if (!args[1]) {
+                console.error('Wrong syntax. Usage: ' + helpCommands.search.usage);
+                break;
+            }
+            const results = await searchMod(args[1] || "", args[2] || 10);
+            results.data.forEach(e => {
+                console.log(`${e.id} - ${e.name} (${e.slug})`);
+            });
+            break;
+        case 'download':
+            // <modId> <gameVersion> <path>
+
+            break;
+        case 'help':
+            if (!args[1]) {
+                console.log(Object.keys(helpCommands).join(", "));
+                console.log('Use \'help <command>\' for a detailed description of the command');
+            } else {
+                const helpCommand = helpCommands[args[1]];
+                if (!helpCommand)
+                    console.error('The command does not exist. Try \'help\' for a list of commands.');
+                console.log(helpCommand.description);
+                console.log('Usage: ' + helpCommand.usage);
+            }
+            break;
+        default:
+            console.error('Unrecognized command. Try \'help\' for a list of commands');
+            break;
+    }
 })();

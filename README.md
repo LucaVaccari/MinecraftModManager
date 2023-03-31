@@ -3,6 +3,6 @@
 Project goals:
 
 - [x] mod searching
-- [ ] mod download
+- [x] mod download
 - [ ] keep track of the downloaded mods
 - [ ] mod updater
